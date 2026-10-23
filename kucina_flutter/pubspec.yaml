@@ -1,0 +1,32 @@
+name: kucina_flutter
+description: Kucina — Reservas con descuentos dinámicos en restaurantes peruanos.
+publish_to: 'none'
+version: 2.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Network
+  dio: ^5.4.3+1
+
+  # UI
+  qr_flutter: ^4.1.0
+  url_launcher: ^6.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+    - assets/dishes/

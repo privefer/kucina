@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kucina Business | Hub Operativo, XGBoost ML & WhatsApp</title>
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --card-bg: #141721;
+      --card-hover: #1c202e;
+      --border: #24293d;
+      --text: #ffffff;
+      --text-muted: #8e95a5;
+      --primary: #FF5A36;
+      --primary-glow: rgba(255, 90, 54, 0.25);
+      --success: #10B981;
+      --success-glow: rgba(16, 185, 129, 0.2);
+      --warning: #F59E0B;
+      --info: #3B82F6;
+      --whatsapp: #25D366;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 24px; min-height: 100vh; }
+    .container { max-width: 1300px; margin: 0 auto; }
+    
+    /* Header */
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+    .logo-area { display: flex; align-items: center; gap: 12px; }
+    .logo-badge { background: var(--primary); color: #fff; font-weight: 800; font-size: 18px; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 12px var(--primary-glow); }
+    h1 { font-size: 22px; font-weight: 700; }
+    .status-indicator { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--success); font-weight: 600; background: var(--success-glow); padding: 6px 12px; border-radius: 20px; border: 1px solid var(--success); }
+    .pulse-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
+
+    /* Top KPIs */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .kpi-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; position: relative; overflow: hidden; transition: transform 0.2s, border-color 0.2s; }
+    .kpi-card:hover { transform: translateY(-2px); border-color: #3b4260; }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
+    .kpi-card.green::before { background: var(--success); }
+    .kpi-card.blue::before { background: var(--info); }
+    .kpi-card.purple::before { background: #8B5CF6; }
+    .kpi-title { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+    .kpi-value { font-size: 26px; font-weight: 800; margin-top: 6px; }
+
+    /* Two Columns: ML & Actions */
+    .dashboard-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-bottom: 24px; }
+    @media (max-width: 960px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+    .panel-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .panel-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+    /* XGBoost Simulator */
+    .ml-simulator { background: #0c0e15; border: 1px solid #1f2436; border-radius: 12px; padding: 18px; margin-top: 12px; }
+    .slider-group { margin-bottom: 14px; }
+    .slider-header { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+    .slider-header span:last-child { font-weight: 700; color: var(--primary); }
+    input[type="range"] { width: 100%; accent-color: var(--primary); height: 6px; background: #232738; border-radius: 4px; outline: none; }
+    
+    .ml-output-box { display: flex; align-items: center; justify-content: space-between; background: #161a26; border: 1px solid #2a3148; border-radius: 10px; padding: 14px 18px; margin-top: 14px; }
+    .ml-discount-badge { font-size: 28px; font-weight: 900; color: var(--success); }
+    .ml-cap-indicator { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: rgba(255, 90, 54, 0.2); color: var(--primary); font-weight: 700; }
+
+    /* WhatsApp & Check-in Panels */
+    .action-row { display: flex; gap: 10px; margin-top: 12px; }
+    input[type="text"], select { width: 100%; padding: 12px 14px; background: #0c0e15; border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 14px; }
+    input[type="text"]:focus, select:focus { outline: none; border-color: var(--primary); }
+    .btn { background: var(--primary); color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .btn:hover { background: #e04826; }
+    .btn-whatsapp { background: #25D366; color: #fff; }
+    .btn-whatsapp:hover { background: #20b858; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; }
+    .btn-outline:hover { background: var(--card-hover); }
+
+    /* Table Section */
+    .table-container { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-top: 24px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    th { background: #181c28; padding: 14px 16px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+    td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; }
+    .badge-confirmed { background: rgba(59, 130, 246, 0.15); color: var(--info); border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-seated { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-completed { background: rgba(107, 114, 128, 0.2); color: #9CA3AF; }
+    .badge-no_show { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .action-icon-btn { padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: #1a1e2b; color: #fff; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+    .action-icon-btn:hover { background: #282e42; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; }
+    .modal { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 500px; padding: 24px; }
+    .alert-banner { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; display: none; font-size: 13px; font-weight: 600; }
+    .alert-success { background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); color: var(--success); }
+    .alert-error { background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #EF4444; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo-area">
+        <div class="logo-badge">K</div>
+        <div>
+          <h1>Kucina Business Hub</h1>
+          <p style="color: var(--text-muted); font-size: 12px;">Gestión de Reservas, Inferencia XGBoost y Centro WhatsApp</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <div class="status-indicator">
+          <div class="pulse-dot"></div>
+          <span>Sincronizado en Vivo con Flutter App</span>
+        </div>
+        <button class="btn btn-outline" onclick="fetchDashboard()">🔄 Actualizar</button>
+      </div>
+    </header>
+
+    <div id="alertBanner" class="alert-banner"></div>
+
+    <!-- Top KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">Reservas Totales</div>
+        <div class="kpi-value" id="kpiTotalBookings">0</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-title">Comensales Sentados Hoy</div>
+        <div class="kpi-value" id="kpiSeatedToday" style="color: var(--success);">0</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-title">Depósitos Anti-No Show (PEN)</div>
+        <div class="kpi-value" id="kpiTotalDeposits" style="color: var(--info);">S/ 0.00</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-title">Descuento Promedio XGBoost</div>
+        <div class="kpi-value" id="kpiAvgDiscount" style="color: #A78BFA;">22% OFF</div>
+      </div>
+    </div>
+
+    <!-- Main Grid: ML Simulator & Operations -->
+    <div class="dashboard-grid">
+      <!-- Left: XGBoost ML Metrics & Realtime Simulator -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <div class="panel-title">⚡ Simulador en Vivo de Descuentos Dinámicos XGBoost</div>
+          <span class="badge badge-confirmed">8 Árboles GBDT</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 13px;">Ajusta los parámetros operativos para observar cómo el modelo GBDT predice el descuento óptimo en milisegundos:</p>
+        
+        <div class="ml-simulator">
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Tasa de Ocupación del Restaurante:</span>
+              <span id="labelOccupancy">40%</span>
+            </div>
+            <input type="range" id="sliderOccupancy" min="0" max="100" value="40" oninput="runMlSimulation()">
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Hora Pico (19:30 - 21:30):</span>
+              <span id="labelPeak">No (Hora Valle)</span>
+            </div>
+            <input type="range" id="sliderPeak" min="0" max="1" value="0" oninput="runMlSimulation()">
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Anticipación de la Reserva:</span>
+              <span id="labelLeadTime">6 Horas</span>
+            </div>
+            <input type="range" id="sliderLeadTime" min="1" max="48" value="6" oninput="runMlSimulation()">
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Fidelidad del Comensal (Loyalty Score):</span>
+              <span id="labelLoyalty">0.85 (Frecuente)</span>
+            </div>
+            <input type="range" id="sliderLoyalty" min="10" max="100" value="85" oninput="runMlSimulation()">
+          </div>
+
+          <div class="ml-output-box">
+            <div>
+              <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Descuento Calculado ML:</div>
+              <div class="ml-discount-badge" id="mlCalculatedDiscount">22% OFF</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="ml-cap-indicator" id="mlCapStatus">🛡️ CAP MÁXIMO 30% ACTIVO</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Latencia de Inferencia: <strong>&lt; 1 ms</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Operations & WhatsApp Hub -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <div class="panel-title">📲 Validación QR & Centro de Notificaciones</div>
+        </div>
+
+        <!-- QR / Check-in -->
+        <div style="margin-bottom: 20px;">
+          <label style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Check-in Inmediato (Escanear QR o ID):</label>
+          <form class="action-row" onsubmit="handleCheckin(event)">
+            <input type="text" id="qrInput" placeholder="Ej: KUCINA-RES-BOOK-XXXX o ID..." required />
+            <button type="submit" class="btn">Sentar Mesa</button>
+          </form>
+        </div>
+
+        <!-- Quick Walk-in / App Simulation -->
+        <div style="background: #0c0e15; border: 1px solid #1f2436; border-radius: 12px; padding: 16px;">
+          <div style="font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--primary);">⚡ Crear Reserva Rápida / Simular Walk-in:</div>
+          <form onsubmit="handleQuickBook(event)" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <input type="text" id="quickName" placeholder="Nombre Comensal" required style="grid-column: span 2;" />
+            <input type="text" id="quickPhone" placeholder="Teléfono (+51)" required />
+            <select id="quickRest">
+              <option value="rest-1">Carnal Prime (Miraflores)</option>
+              <option value="rest-2">Amoramar (Barranco)</option>
+              <option value="rest-3">Sapiens (San Isidro)</option>
+              <option value="rest-4">Troppo (San Isidro)</option>
+            </select>
+            <button type="submit" class="btn btn-whatsapp" style="grid-column: span 2; justify-content: center;">
+              🚀 Crear y Enviar WhatsApp Inmediato
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Bookings Table -->
+    <div class="table-container">
+      <div style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+        <div style="font-size: 16px; font-weight: 700;">📋 Reservas Activas (Sincronizadas con la App Móvil)</div>
+        <div style="font-size: 12px; color: var(--text-muted);">Actualización automática cada 2 segundos</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID / Código</th>
+            <th>Restaurante</th>
+            <th>Comensal & Contacto</th>
+            <th>Fecha & Hora</th>
+            <th>Personas</th>
+            <th>Descuento ML</th>
+            <th>Depósito</th>
+            <th>Estado</th>
+            <th>Acciones Operativas & WhatsApp</th>
+          </tr>
+        </thead>
+        <tbody id="bookingsTable">
+          <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 28px;">Cargando reservas en vivo...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- WhatsApp Custom Dispatcher Modal -->
+  <div id="whatsappModal" class="modal-overlay">
+    <div class="modal">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 17px; font-weight: 700; color: var(--whatsapp);">📲 Enviar Mensaje de WhatsApp</h3>
+        <button class="action-icon-btn" onclick="closeWhatsAppModal()">✕</button>
+      </div>
+      <form onsubmit="handleSendCustomWhatsApp(event)">
+        <input type="hidden" id="modalPhone" />
+        <input type="hidden" id="modalGuest" />
+        <input type="hidden" id="modalRest" />
+
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 12px; color: var(--text-muted);">Tipo de Notificación:</label>
+          <select id="modalTemplate" onchange="updateTemplatePreview()" style="margin-top: 4px;">
+            <option value="table_ready">🔔 ¡Tu mesa está lista!</option>
+            <option value="reminder">⏰ Recordatorio de Reserva para hoy</option>
+            <option value="custom">✍️ Mensaje Personalizado</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 12px; color: var(--text-muted);">Vista Previa del Mensaje:</label>
+          <textarea id="modalPreview" rows="5" style="width: 100%; background: #0c0e15; border: 1px solid var(--border); border-radius: 8px; color: #fff; padding: 10px; font-size: 13px; margin-top: 4px; resize: none;"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-outline" onclick="closeWhatsAppModal()">Cancelar</button>
+          <button type="submit" class="btn btn-whatsapp">Abrir en WhatsApp</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentData = null;
+
+    async function fetchDashboard() {
+      try {
+        const res = await fetch('/api/company/dashboard');
+        const data = await res.json();
+        currentData = data;
+
+        // KPIs
+        document.getElementById('kpiTotalBookings').textContent = data.totalBookings;
+        document.getElementById('kpiSeatedToday').textContent = data.seatedToday;
+        document.getElementById('kpiTotalDeposits').textContent = `S/ ${(data.totalDepositsCollected || 0).toFixed(2)}`;
+        document.getElementById('kpiAvgDiscount').textContent = `${data.xgboostMetrics.averageDiscountApplied}% OFF`;
+
+        // Bookings Table
+        const tbody = document.getElementById('bookingsTable');
+        if (!data.recentBookings || data.recentBookings.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 28px;">No hay reservas registradas. Utiliza la App móvil o el formulario superior para crear una.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.recentBookings.map(b => `
+          <tr>
+            <td><strong>#${b.id.substring(0, 8).toUpperCase()}</strong></td>
+            <td>${b.restaurant_name || 'Restaurante'}</td>
+            <td><strong>${b.guest_name}</strong><br><small style="color: var(--text-muted);">${b.guest_phone}</small></td>
+            <td>${b.booking_date}<br><small style="color: var(--primary); font-weight: 700;">${b.booking_time}</small></td>
+            <td>👥 ${b.party_size}</td>
+            <td><span style="color: var(--success); font-weight: 800; font-size: 13px;">${b.applied_discount}% OFF</span></td>
+            <td>${b.deposit_status === 'paid' ? '<span style="color: var(--info); font-weight: 600;">S/ ' + b.deposit_amount.toFixed(2) + ' (Pagado)</span>' : '<span style="color: var(--text-muted);">Sin Garantía</span>'}</td>
+            <td><span class="badge badge-${b.status}">${b.status.toUpperCase()}</span></td>
+            <td>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                ${b.status === 'confirmed' ? `<button class="action-icon-btn" style="color: var(--success); border-color: var(--success);" onclick="updateStatus('${b.id}', 'seated')">✅ Sentar</button>` : ''}
+                ${b.status === 'seated' ? `<button class="action-icon-btn" style="color: #9CA3AF;" onclick="updateStatus('${b.id}', 'completed')">🏁 Completar</button>` : ''}
+                ${b.status === 'confirmed' ? `<button class="action-icon-btn" style="color: #EF4444;" onclick="updateStatus('${b.id}', 'no_show')">❌ No Show</button>` : ''}
+                
+                <!-- WhatsApp Direct Action Button -->
+                <a href="${b.direct_whatsapp_url}" target="_blank" class="action-icon-btn" style="background: rgba(37, 211, 102, 0.15); color: #25D366; border-color: #25D366;">
+                  📲 WhatsApp
+                </a>
+                
+                <button class="action-icon-btn" onclick="openWhatsAppModal('${b.guest_phone}', '${b.guest_name}', '${b.restaurant_name}')">
+                  🔔 Notificar
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error('Error dashboard:', e);
+      }
+    }
+
+    // XGBoost Realtime Prediction Simulator
+    async function runMlSimulation() {
+      const occupancy = parseInt(document.getElementById('sliderOccupancy').value, 10);
+      const isPeak = parseInt(document.getElementById('sliderPeak').value, 10);
+      const leadTime = parseInt(document.getElementById('sliderLeadTime').value, 10);
+      const loyalty = parseInt(document.getElementById('sliderLoyalty').value, 10) / 100;
+
+      document.getElementById('labelOccupancy').textContent = `${occupancy}%`;
+      document.getElementById('labelPeak').textContent = isPeak === 1 ? 'Sí (Hora Punta)' : 'No (Hora Valle)';
+      document.getElementById('labelLeadTime').textContent = `${leadTime} Horas`;
+      document.getElementById('labelLoyalty').textContent = `${loyalty.toFixed(2)} (${loyalty > 0.7 ? 'Frecuente' : 'Nuevo'})`;
+
+      try {
+        const res = await fetch('/api/ml/predict-discount', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            occupancyRate: occupancy / 100,
+            isPeakHour: isPeak,
+            leadTimeHours: leadTime,
+            userLoyaltyScore: loyalty
+          })
+        });
+        const data = await res.json();
+        document.getElementById('mlCalculatedDiscount').textContent = `${data.discountPercentage}% OFF`;
+        document.getElementById('mlCapStatus').textContent = data.capped ? '🛡️ CAP MÁXIMO 30% ACTIVO' : '✅ DINÁMICO GBDT';
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Check-in
+    async function handleCheckin(e) {
+      e.preventDefault();
+      const code = document.getElementById('qrInput').value.trim();
+      try {
+        const res = await fetch('/api/company/checkin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ qr_code: code, booking_id: code })
+        });
+        const data = await res.json();
+        showAlert(res.ok ? data.message : data.error, res.ok);
+        if (res.ok) {
+          document.getElementById('qrInput').value = '';
+          fetchDashboard();
+        }
+      } catch (err) {
+        showAlert('Error al conectar con el servidor', false);
+      }
+    }
+
+    // Quick Book from Dashboard
+    async function handleQuickBook(e) {
+      e.preventDefault();
+      const name = document.getElementById('quickName').value.trim();
+      const phone = document.getElementById('quickPhone').value.trim();
+      const restId = document.getElementById('quickRest').value;
+
+      try {
+        const res = await fetch('/api/company/quick-book', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            restaurant_id: restId,
+            guest_name: name,
+            guest_phone: phone,
+            party_size: 2
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showAlert(`✅ Reserva creada para ${name} con ${data.booking.applied_discount}% de descuento ML!`, true);
+          document.getElementById('quickName').value = '';
+          document.getElementById('quickPhone').value = '';
+          fetchDashboard();
+          // Open WhatsApp automatically
+          window.open(data.booking.directWhatsAppUrl, '_blank');
+        }
+      } catch (err) {
+        showAlert('Error al crear reserva rápida', false);
+      }
+    }
+
+    // Status updater
+    async function updateStatus(bookingId, status) {
+      await fetch('/api/company/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ booking_id: bookingId, status })
+      });
+      fetchDashboard();
+    }
+
+    // WhatsApp Modal
+    function openWhatsAppModal(phone, guest, rest) {
+      document.getElementById('modalPhone').value = phone;
+      document.getElementById('modalGuest').value = guest;
+      document.getElementById('modalRest').value = rest;
+      updateTemplatePreview();
+      document.getElementById('whatsappModal').style.display = 'flex';
+    }
+
+    function closeWhatsAppModal() {
+      document.getElementById('whatsappModal').style.display = 'none';
+    }
+
+    function updateTemplatePreview() {
+      const type = document.getElementById('modalTemplate').value;
+      const guest = document.getElementById('modalGuest').value;
+      const rest = document.getElementById('modalRest').value;
+
+      let msg = '';
+      if (type === 'table_ready') {
+        msg = `🔔 *¡TU MESA ESTÁ LISTA! - KUCINA*\n📍 *Restaurante:* ${rest}\n👤 *Hola:* ${guest}\n✨ Tu mesa ya está disponible. Por favor acércate a la recepción.\n¡Buen provecho! 🍷`;
+      } else if (type === 'reminder') {
+        msg = `⏰ *RECORDATORIO DE RESERVA - KUCINA*\n📍 *Restaurante:* ${rest}\n👤 *Titular:* ${guest}\n📅 Te recordamos que tu reserva está programada para hoy. ¡Te esperamos! 🍽️`;
+      } else {
+        msg = `Hola ${guest}, te escribimos desde ${rest} respecto a tu reserva en Kucina.`;
+      }
+      document.getElementById('modalPreview').value = msg;
+    }
+
+    async function handleSendCustomWhatsApp(e) {
+      e.preventDefault();
+      const phone = document.getElementById('modalPhone').value;
+      const guest = document.getElementById('modalGuest').value;
+      const rest = document.getElementById('modalRest').value;
+      const type = document.getElementById('modalTemplate').value;
+      const customText = document.getElementById('modalPreview').value;
+
+      const res = await fetch('/api/company/send-whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, guest_name: guest, restaurant_name: rest, message_type: type, custom_text: customText })
+      });
+      const data = await res.json();
+      closeWhatsAppModal();
+      window.open(data.directWhatsAppUrl, '_blank');
+    }
+
+    function showAlert(msg, isSuccess) {
+      const b = document.getElementById('alertBanner');
+      b.className = `alert-banner ${isSuccess ? 'alert-success' : 'alert-error'}`;
+      b.textContent = msg;
+      b.style.display = 'block';
+      setTimeout(() => { b.style.display = 'none'; }, 4000);
+    }
+
+    fetchDashboard();
+    setInterval(fetchDashboard, 2000);
+  </script>
+</body>
+</html>

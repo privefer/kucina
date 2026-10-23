@@ -1,0 +1,48 @@
+# ==============================================================================
+# Kucina Pro - Root .gitignore
+# ==============================================================================
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Certificates & Private Keys
+*.pem
+*.key
+*.keystore
+*.jks
+*.p12
+
+# Environment Variables & Secrets (Keep only .env.example)
+.env
+.env.*
+!.env.example
+*.env.local
+
+# Backend
+kucina_backend/node_modules/
+kucina_backend/data/*.db
+kucina_backend/data/*.sqlite*
+kucina_backend/*.log
+
+# Flutter Frontend
+kucina_flutter/.dart_tool/
+kucina_flutter/.flutter-plugins
+kucina_flutter/.flutter-plugins-dependencies
+kucina_flutter/build/
+kucina_flutter/*.log
+kucina_flutter/.pub-cache/
+kucina_flutter/macos/Flutter/ephemeral/
+kucina_flutter/ios/Flutter/ephemeral/
+kucina_flutter/windows/flutter/ephemeral/
+kucina_flutter/linux/flutter/ephemeral/
+
+# Binaries & Compiled App Bundles
+*.app/
+*.apk
+*.aab
+*.ipa

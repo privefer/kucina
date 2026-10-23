@@ -1,0 +1,5 @@
+# Configuración del Keystore de Producción para Google Play Store
+storePassword=tu_password_del_keystore
+keyPassword=tu_password_de_la_llave
+keyAlias=kucina_release_key
+storeFile=/ruta/absoluta/a/tu/upload-keystore.jks

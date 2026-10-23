@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  kucina-db:
+    image: postgres:16-alpine
+    container_name: kucina-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-kucina_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-kucina_secure_password_2026}
+      POSTGRES_DB: ${DB_NAME:-kucina_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - kucina_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-kucina_admin} -d ${DB_NAME:-kucina_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kucina-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kucina-api
+    restart: unless-stopped
+    depends_on:
+      kucina-db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgres://${DB_USER:-kucina_admin}:${DB_PASSWORD:-kucina_secure_password_2026}@kucina-db:5432/${DB_NAME:-kucina_db}
+      - JWT_SECRET=${JWT_SECRET:-kucina_super_secret_jwt_key_2026_prod}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-kucina_refresh_secret_2026_prod}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX=2000
+    volumes:
+      - kucina_data:/app/data
+      - ../kucina_flutter/assets/dishes:/app/public/dishes:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  kucina_data:
+    name: kucina_sqlite_data
+  kucina_pgdata:
+    name: kucina_postgres_data
